@@ -4,7 +4,8 @@ The inventory file is written in **JSON** format and contains all your machines.
 
 In it's simplest form an _inventory_ file is an array of object with a `name`
 property, that's it. But, if you define additionnal keys on those objects you
-will be able to configure how `hotomata` communicates with your machine.
+will be able to configure how `hotomata` communicates with your machine over SSH
+and more (set machine specific vars that can later be used in templates).
 
 ## Simplest form
 
