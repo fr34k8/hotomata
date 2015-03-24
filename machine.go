@@ -16,7 +16,10 @@ type Machine struct {
 func Machines(hosts []map[string]string) []*Machine {
 	var machines []*Machines
 	for _, host := range hosts {
-		hostname := host["ssh_hostname"]
+		hostname := host["name"]
+		if h, ok := host["ssh_hostname"]; ok {
+			hostname = h
+		}
 
 		port := 22
 		if p, ok = host["ssh_port"]; ok {
@@ -33,10 +36,20 @@ func Machines(hosts []map[string]string) []*Machine {
 		}
 
 		sshAuthMethods := []ssh.AuthMethod{}
+		// Password
 		if password, ok := host["ssh_password"]; ok {
 			sshAuthMethods = append(sshAuthMethods, ssh.Password(password))
 		}
-		if keyLocation, ok := host["ssh_key"]; ok {
+		// Key provided
+		keyLocation, ok := host["ssh_key"]
+		// Try default key
+		if !ok {
+			defaultKeyLocation := path.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
+			if _, err := os.Stat(defaultKeyLocation); err != nil {
+				keyLocation = defaultKeyLocation
+			}
+		}
+		if keyLocation != "" {
 			authMethod, err := clientKeyAuth(keyLocation)
 			if err != nil {
 				fmt.Printf("Error loading key for host [%s]\n", hostname)

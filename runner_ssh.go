@@ -13,8 +13,6 @@ import (
 type SSHRunner struct {
 }
 
-// TODO(kiasaki) Respect "ignore_errors"
-// TODO(kiasaki) Respect "skip"
 func (r *SSHRunner) Run(machine Machine, command string) *TaskResponse {
 	var response = &TaskResponse{
 		Log:    &bytes.Buffer{},

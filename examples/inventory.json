@@ -1,0 +1,46 @@
+[
+  {
+    "group_name": "aws",
+    "ssh_port": 2222,
+    "ssh_key": "/home/bob/.ssh/aws_infra",
+    "provider": "aws",
+    "machines": [
+      {
+        "group_name": "db",
+        "tags": ["8gb", "db", "ssd", "mem"],
+        "role": "db",
+        "ssh_username": "ubuntu",
+        "machines": [
+          {
+            "name": "web1",
+            "ssh_hostname": "web1.us-east.aws.example.com"
+          },
+          {
+            "name": "web2",
+            "ssh_hostname": "web2.us-east.aws.example.com"
+          },
+          {
+            "name": "web3",
+            "ssh_hostname": "web3.us-east.aws.example.com"
+          }
+        ]
+      },
+      {
+        "group_name": "lb",
+        "tags": ["2gb", "lb", "spinning"],
+        "role": "lb",
+        "ssh_username": "core",
+        "machines": [
+          {
+            "name": "lb1",
+            "ssh_hostname": "lb1.us-east.aws.example.com"
+          },
+          {
+            "name": "lb2",
+            "ssh_hostname": "lb2.us-east.aws.example.com"
+          }
+        ]
+      }
+    ]
+  }
+]
