@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/ghodss/yaml"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -34,9 +37,13 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
+				json, err := yaml.YAMLToJSON(bytes)
+				if err != nil {
+					panic(err)
+				}
 
 				schemaLoader := gojsonschema.NewStringLoader(inventorySchema)
-				loader := gojsonschema.NewStringLoader(string(bytes))
+				documentLoader := gojsonschema.NewStringLoader(string(json))
 
 				result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 				if err != nil {
