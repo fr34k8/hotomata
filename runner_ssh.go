@@ -10,6 +10,12 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const (
+	ECHO          = 53
+	TTY_OP_ISPEED = 128
+	TTY_OP_OSPEED = 129
+)
+
 type SSHRunner struct {
 }
 
@@ -23,8 +29,8 @@ func (r *SSHRunner) Run(machine Machine, command string) *TaskResponse {
 	// Local execution
 	if machine.Hostname == "127.0.0.1" && machine.Port == 0 {
 		cmd := exec.Command("/bin/sh", "-c", command)
-		cmd.Stdout = &b
-		cmd.Stderr = &b
+		cmd.Stdout = response.Log
+		cmd.Stderr = response.Log
 		err := cmd.Run()
 		if err != nil {
 			response.Log.WriteString(err.Error() + "\n")
@@ -58,8 +64,8 @@ func (r *SSHRunner) Run(machine Machine, command string) *TaskResponse {
 		fmt.Printf("Request for terminal failed: %s: %s\n", hostname, err.Error())
 		os.Exit(1)
 	}
-	session.Stdout = &b
-	session.Stderr = &b
+	session.Stdout = response.Log
+	session.Stderr = response.Log
 	err = session.Run(command)
 	if err != nil {
 		response.Log.WriteString(err.Error() + "\n")

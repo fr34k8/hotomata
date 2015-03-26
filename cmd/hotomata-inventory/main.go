@@ -6,15 +6,8 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/ghodss/yaml"
-	"github.com/xeipuuv/gojsonschema"
+	"github.com/merd/hotomata"
 )
-
-const inventorySchema = `
-{
-  "type": "object"
-}
-`
 
 func main() {
 	app := cli.NewApp()
@@ -33,27 +26,20 @@ func main() {
 			Aliases: []string{"c"},
 			Usage:   "Verifies a given inventory file is valid",
 			Action: func(c *cli.Context) {
-				bytes, err := ioutil.ReadFile(c.Args().First())
-				if err != nil {
-					panic(err)
-				}
-				json, err := yaml.YAMLToJSON(bytes)
+				contents, err := ioutil.ReadFile(c.Args().First())
 				if err != nil {
 					panic(err)
 				}
 
-				schemaLoader := gojsonschema.NewStringLoader(inventorySchema)
-				documentLoader := gojsonschema.NewStringLoader(string(json))
-
-				result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+				result, err := hotomata.ValidateInventory(string(contents))
 				if err != nil {
 					panic(err.Error())
 				}
 
 				if result.Valid() {
-					fmt.Printf("The document is valid\n")
+					fmt.Printf(hotomata.Colorize("The document is valid\n", hotomata.ColorGreen))
 				} else {
-					fmt.Printf("The document is not valid. see errors :\n")
+					fmt.Printf(hotomata.Colorize("The document is not valid. see errors :\n", hotomata.ColorRed))
 					for _, desc := range result.Errors() {
 						fmt.Printf("- %s\n", desc)
 					}

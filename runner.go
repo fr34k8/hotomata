@@ -21,7 +21,7 @@ const (
 )
 
 type TaskResponse struct {
-	Log    bytes.Buffer
+	Log    *bytes.Buffer
 	Action TaskAction
 	Status TaskStatus
 }

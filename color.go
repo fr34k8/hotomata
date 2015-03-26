@@ -13,16 +13,16 @@ type Color struct {
 
 // A list of colors that are useful. These are all non-bolded by default.
 var (
-	ColorNone    UiColor = Color{-1, false}
-	ColorRed             = Color{31, false}
-	ColorGreen           = Color{32, false}
-	ColorYellow          = Color{33, false}
-	ColorBlue            = Color{34, false}
-	ColorMagenta         = Color{35, false}
-	ColorCyan            = Color{36, false}
+	ColorNone    Color = Color{-1, false}
+	ColorRed           = Color{31, false}
+	ColorGreen         = Color{32, false}
+	ColorYellow        = Color{33, false}
+	ColorBlue          = Color{34, false}
+	ColorMagenta       = Color{35, false}
+	ColorCyan          = Color{36, false}
 )
 
-func Colorize(message string, color UiColor) string {
+func Colorize(message string, color Color) string {
 	if color.Code == -1 {
 		return message
 	}

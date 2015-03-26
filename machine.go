@@ -2,6 +2,9 @@ package hotomata
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 	"strconv"
 
 	"golang.org/x/crypto/ssh"
@@ -10,11 +13,11 @@ import (
 type Machine struct {
 	Hostname  string
 	Port      int
-	SSHConfig *ssh.Config
+	SSHConfig *ssh.ClientConfig
 }
 
 func Machines(hosts []map[string]string) []*Machine {
-	var machines []*Machines
+	var machines []*Machine
 	for _, host := range hosts {
 		hostname := host["name"]
 		if h, ok := host["ssh_hostname"]; ok {
@@ -22,7 +25,8 @@ func Machines(hosts []map[string]string) []*Machine {
 		}
 
 		port := 22
-		if p, ok = host["ssh_port"]; ok {
+		if p, ok := host["ssh_port"]; ok {
+			var err error
 			port, err = strconv.Atoi(p)
 			if err != nil {
 				fmt.Printf("Error parsing port for host [%s]\n", hostname)
@@ -31,7 +35,7 @@ func Machines(hosts []map[string]string) []*Machine {
 		}
 
 		username := "root"
-		if u, ok = host["ssh_username"]; ok {
+		if u, ok := host["ssh_username"]; ok {
 			username = u
 		}
 
@@ -63,15 +67,15 @@ func Machines(hosts []map[string]string) []*Machine {
 			Auth: sshAuthMethods,
 		}
 		machines = append(machines, &Machine{
-			Hostname: hostname,
-			Port:     port,
-			Config:   config,
+			Hostname:  hostname,
+			Port:      port,
+			SSHConfig: config,
 		})
 	}
 	return machines
 }
 
-func sshAuth(keyLocation string) (ssh.AuthMethod, error) {
+func clientKeyAuth(keyLocation string) (ssh.AuthMethod, error) {
 	buf, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
 		return nil, err
