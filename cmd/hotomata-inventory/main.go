@@ -51,7 +51,21 @@ func main() {
 			Aliases: []string{"p"},
 			Usage:   "Prints the contents of an inventory file",
 			Action: func(c *cli.Context) {
-				println("completed task: ", c.Args().First())
+				contents, err := ioutil.ReadFile(c.Args().First())
+				if err != nil {
+					fmt.Printf(hotomata.Colorize("Can't read file: %s", hotomata.ColorRed), c.Args().First())
+				}
+
+				machines, err := hotomata.ParseInventory(contents)
+				if err != nil {
+					fmt.Printf(hotomata.Colorize("%s\n", hotomata.ColorRed), err.Error())
+				} else {
+					for _, machine := range machines {
+						fmt.Printf(hotomata.Colorize("Machine: %s\n", hotomata.ColorMagenta), machine.Name)
+						fmt.Printf(hotomata.Colorize("Groups: %v\n", hotomata.ColorBlue), machine.Groups.Names())
+						fmt.Println("")
+					}
+				}
 			},
 		},
 	}

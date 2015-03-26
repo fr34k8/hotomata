@@ -10,7 +10,15 @@ For simpler use cases it is more aproachable than bigger players in the field.
 **Hotomata** draws inspiration from _Ansible_ and _SaltStack_ but also from few
 open source, not widely popular projects like [dynport/urknall](http://github.com/dynport/urknall)
 or [sudharsh/henchman](http://github.com/sudharsh/henchman) and even few SaaSes
-out there like [commando.io](https://commando.io) or [devo.ps](https://devo.ps)
+out there like [commando.io](https://commando.io)
+
+- or [devo.ps](https://devo.ps)
+- or [bigpanda.io](https://bigpanda.io/)
+- or [stackstorm](http://stackstorm.com/)
+- Cacti
+- Splunk
+- VictorOps
+- or ...
 
 ## Getting started
 
