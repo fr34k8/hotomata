@@ -78,7 +78,20 @@ an dscour those to understand better what `hotomata` has to offer:
 
 ### `hotomata`
 
-Main tool used for execution of **masterfiles** and 
+Main tool used for execution of **masterfiles** against remotes and remote execution
+facilities.
+
+### `hotomata-vault`
+
+Tool used to **decrypt**, **encrypt**, **view**, **edit**, **create** and **rekey**
+vaults of var files. Those are the place you can store your secrets safely and
+commit them source control with less worry than with plaintext.
+
+### `hotomata-inventory`
+
+A simple tool to inspect (**print**) an inventory file's contents as seen and
+parsed by `hotomata` and to validate (**check**) that an inventory file is syntaxically
+valid.
 
 ## Contributions
 
