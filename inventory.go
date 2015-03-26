@@ -10,6 +10,24 @@ type InventoryMachine struct {
 	properties map[string]json.RawMessage
 }
 
+func (m InventoryMachine) Properties() map[string]json.RawMessage {
+	var props = map[string]json.RawMessage{}
+
+	// Group props in precedence order
+	for _, g := range m.Groups {
+		for k, v := range g.properties {
+			props[k] = v
+		}
+	}
+
+	// Our own props
+	for k, v := range m.properties {
+		props[k] = v
+	}
+
+	return props
+}
+
 type InventoryGroup struct {
 	GroupName  string
 	properties map[string]json.RawMessage

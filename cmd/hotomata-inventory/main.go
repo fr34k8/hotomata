@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 
 	"github.com/codegangsta/cli"
 	"github.com/merd/hotomata"
@@ -63,6 +65,23 @@ func main() {
 					for _, machine := range machines {
 						fmt.Printf(hotomata.Colorize("Machine: %s\n", hotomata.ColorMagenta), machine.Name)
 						fmt.Printf(hotomata.Colorize("Groups: %v\n", hotomata.ColorBlue), machine.Groups.Names())
+						fmt.Print("Properties:\n")
+
+						// Here's the tricky part, lets sort them alphabeticly
+						var pairs = PropertyPairs{}
+						for k, v := range machine.Properties() {
+							pairs = append(pairs, PropertyPair{k, v})
+						}
+
+						sort.Sort(&pairs)
+						for _, pair := range pairs {
+							valString, err := pair.Value.MarshalJSON()
+							if err != nil {
+								panic(err) // should never happen it's unmarshaled json
+							}
+							fmt.Printf("\t%s: %s\n", pair.Property, string(valString))
+						}
+
 						fmt.Println("")
 					}
 				}
@@ -72,3 +91,13 @@ func main() {
 
 	app.Run(os.Args)
 }
+
+type PropertyPair struct {
+	Property string
+	Value    json.RawMessage
+}
+type PropertyPairs []PropertyPair
+
+func (p PropertyPairs) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p PropertyPairs) Len() int           { return len(p) }
+func (p PropertyPairs) Less(i, j int) bool { return p[i].Property > p[j].Property }
