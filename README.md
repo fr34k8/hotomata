@@ -7,6 +7,12 @@ cases a great learning experience and fun project.
 
 For simpler use cases it is more aproachable than bigger players in the field.
 
+The biggest differentiator with other CM tools out there is that _Hotomata_ really
+embodies simplicty by promoting small commands doing one thing well that can
+be composed in complex operations by composing them together. Unix and Golang
+concepts yes, yes. All that without writing custom plugins once and still using
+your beloved YAML popular for Ansible or SaltStack folks, no funky dsl to learn.
+
 **Hotomata** draws inspiration from _Ansible_ and _SaltStack_ but also from few
 open source, not widely popular projects like [dynport/urknall](http://github.com/dynport/urknall)
 or [sudharsh/henchman](http://github.com/sudharsh/henchman) and even few SaaSes
@@ -19,6 +25,38 @@ out there like [commando.io](https://commando.io)
 - Splunk
 - VictorOps
 - or ...
+
+Hotomata masterfiles end up being conceptually close to this:
+
+```
+masterplan db
+  machines db-master
+  vars [...]
+  plans
+    - common
+        vars [...]
+        plans
+          - hostname
+              run: "echo '{{.varx}}' >> /etc/hostname"
+          - lang
+              vars [...]
+              plans
+                - upload
+                    vars [...]
+                    run "scp ..."
+                    local true
+                - service_reboot
+                    vars [...]
+                    run "sudo service {{.service}} restart"
+    - db
+        vars [...]
+        plans
+          - ...
+    - upload
+        vars [...]
+        run "rsync {{.localDir}} {{.remoteDir}}"
+        local true
+```
 
 ## Getting started
 
@@ -35,6 +73,12 @@ an dscour those to understand better what `hotomata` has to offer:
 - [Overview](https://github.com/merd/hotomata/blob/master/docs/overview.md)
 - [Masterplan file](https://github.com/merd/hotomata/blob/master/docs/masterplan_file.md)
 - [Inventory file](https://github.com/merd/hotomata/blob/master/docs/inventory_file.md)
+
+## CLI Tools
+
+### `hotomata`
+
+Main tool used for execution of **masterfiles** and 
 
 ## Contributions
 
