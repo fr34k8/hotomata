@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/codegangsta/cli"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/merd/hotomata"
 )
 
@@ -38,9 +39,9 @@ func run(c *cli.Context) {
 	if err != nil {
 		writeError("Error: Unable to read masterplan file at "+masterPlanFile, err)
 	}
-	_, err = hotomata.ParseMasterPlan(contents)
+	masterplans, err := hotomata.ParseMasterPlan(contents)
 	if err != nil {
 		writeError("Error: Unable to parse masterplan file, verify your YAML syntax", err)
 	}
-
+	spew.Dump(masterplans)
 }
