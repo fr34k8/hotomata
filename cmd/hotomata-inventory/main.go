@@ -67,7 +67,7 @@ func main() {
 						fmt.Printf(hotomata.Colorize("Groups: %v\n", hotomata.ColorBlue), machine.Groups.Names())
 						fmt.Print("Properties:\n")
 
-						// Here's the tricky part, lets sort them alphabeticly
+						// Here's the tricky part, lets sort them alphabeticlay
 						var pairs = PropertyPairs{}
 						for k, v := range machine.Properties() {
 							pairs = append(pairs, PropertyPair{k, v})
