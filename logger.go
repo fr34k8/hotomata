@@ -2,17 +2,39 @@ package hotomata
 
 import (
 	"fmt"
+	"io"
 )
 
-type Logger interface {
-	Print(...interface{})
-	Printf(string, ...interface{})
+const logFillerRune = '-'
+const loglineLength = 100
+
+type Logger struct {
+	writer     io.Writer
+	colored    bool
+	fillerRune rune
 }
 
-func logLine(l Logger, filler rune, format string, v ...interface{}) {
-	msg := fmt.Sprintf(format, v...)
-	for len(msg) < 80 {
-		msg = msg + string(filler)
+func NewLogger(writer io.Writer, colored bool) *Logger {
+	return &Logger{writer: writer, colored: colored, fillerRune: logFillerRune}
+}
+
+func (l *Logger) Write(c Color, value string) {
+	if l.colored {
+		l.writer.Write([]byte(Colorize(value, c)))
+	} else {
+		l.writer.Write([]byte(value))
 	}
-	l.Print(msg + "\n")
+}
+
+// Write no color
+func (l *Logger) Writenc(value string) {
+	l.writer.Write([]byte(value))
+}
+
+func (l *Logger) WriteLine(c Color, format string, v ...interface{}) {
+	msg := fmt.Sprintf(format, v...)
+	for len(msg) < loglineLength {
+		msg = msg + string(l.fillerRune)
+	}
+	l.Write(c, msg+"\n")
 }

@@ -44,6 +44,12 @@ func main() {
 			Usage:  "core plans folder location",
 			EnvVar: "HOTOMATA_CORE_PLANS_FOLDER",
 		},
+		cli.StringFlag{
+			Name:   "color",
+			Value:  "true",
+			Usage:  "enable colored output (true or false)",
+			EnvVar: "HOTOMATA_COLOR",
+		},
 	}
 	app.Commands = []cli.Command{
 		{

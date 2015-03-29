@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -24,7 +23,7 @@ func run(c *cli.Context) {
 	if err != nil {
 		writeError("Error: Unable to read inventory file at "+inventoryFile, err)
 	}
-	inventory, err = hotomata.ParseInventory(contents)
+	inventory, err := hotomata.ParseInventory(contents)
 	if err != nil {
 		writeError("Error: Unable to parse inventory file, verify your JSON syntax", err)
 	}
@@ -57,6 +56,6 @@ func run(c *cli.Context) {
 		writeError("Error: could not load plans folder at "+c.GlobalString("plans-folder"), err)
 	}
 
-	logger := log.New(os.Stderr, "", log.Ltime)
+	logger := hotomata.NewLogger(os.Stderr, c.GlobalString("color") == "true")
 	run.RunMasterPlans(logger, masterplans)
 }

@@ -2,15 +2,16 @@ package hotomata
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type InventoryMachine struct {
-	Name       string
-	Groups     InventoryGroups
-	properties map[string]json.RawMessage
+	Name   string
+	Groups InventoryGroups
+	vars   map[string]json.RawMessage
 }
 
-func (m InventoryMachine) Properties() map[string]json.RawMessage {
+func (m InventoryMachine) Vars() map[string]json.RawMessage {
 	var props = map[string]json.RawMessage{}
 
 	// Group props in precedence order
@@ -21,9 +22,12 @@ func (m InventoryMachine) Properties() map[string]json.RawMessage {
 	}
 
 	// Our own props
-	for k, v := range m.properties {
+	for k, v := range m.vars {
 		props[k] = v
 	}
+
+	// Our name
+	props["name"] = []byte(fmt.Sprintf(`"%s"`, m.Name))
 
 	return props
 }
@@ -62,9 +66,9 @@ func parseInventoryItems(groups InventoryGroups, items []map[string]json.RawMess
 		if err := json.Unmarshal(item["name"], &machineName); err == nil && machineName != "" {
 			delete(item, "name")
 			inventoryMachines = append(inventoryMachines, InventoryMachine{
-				Name:       machineName,
-				Groups:     groups,
-				properties: item,
+				Name:   machineName,
+				Groups: groups,
+				vars:   item,
 			})
 		}
 

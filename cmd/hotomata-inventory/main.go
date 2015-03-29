@@ -78,7 +78,7 @@ func printCmd(c *cli.Context) {
 
 			// Here's the tricky part, lets sort them alphabeticlay
 			var pairs = PropertyPairs{}
-			for k, v := range machine.Properties() {
+			for k, v := range machine.Vars() {
 				pairs = append(pairs, PropertyPair{k, v})
 			}
 

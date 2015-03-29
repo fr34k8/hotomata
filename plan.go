@@ -9,6 +9,25 @@ import (
 
 type PlanVars map[string]interface{}
 
+type PlanSpecialFlags struct {
+	Local        bool
+	Sudo         bool
+	IgnoreErrors bool
+}
+
+func (psf PlanSpecialFlags) Join(pc *PlanCall) PlanSpecialFlags {
+	if pc.Local {
+		psf.Local = true
+	}
+	if pc.Sudo {
+		psf.Sudo = true
+	}
+	if pc.Local {
+		psf.IgnoreErrors = true
+	}
+	return psf
+}
+
 type PlanCall struct {
 	Name         string
 	Run          string

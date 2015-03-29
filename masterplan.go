@@ -1,6 +1,10 @@
 package hotomata
 
 import (
+	"encoding/json"
+	"regexp"
+	"strings"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -40,14 +44,34 @@ type MachineFilter struct {
 	Pattern string
 }
 
-// MatchesMachine checks if the current MachineFilter matches the given machine's
-// Vars
-func (mf *MachineFilter) MatchesMachine(machine InventoryMachine) bool {
-	machineVars := machine.Properties()
-	if _, ok := machineVars[mf.Param]; ok {
-		return ok
+func (mf *MachineFilter) Regexp() *regexp.Regexp {
+	if mf.Pattern[0] == '/' && mf.Pattern[len(mf.Pattern)] == '/' {
+		return regexp.MustCompile(mf.Pattern[1 : len(mf.Pattern)-1])
+	} else {
+		// Make sure we escape those meta characters
+		fragments := strings.Split(mf.Pattern, "*")
+		for i, f := range fragments {
+			fragments[i] = regexp.QuoteMeta(f)
+		}
+		return regexp.MustCompile(strings.Join(fragments, ".+"))
 	}
-	return true
+}
+
+// MatchesMachine checks if the current MachineFilter matches the given machine's
+// vars
+func (mf *MachineFilter) MatchesMachine(machine InventoryMachine) bool {
+	machineVars := machine.Vars()
+	matcher := mf.Regexp()
+
+	if rawValue, ok := machineVars[mf.Param]; ok {
+		var stringValue string
+		if err := json.Unmarshal(rawValue, &stringValue); err == nil {
+			return matcher.MatchString(stringValue)
+		}
+		// TODO(kiasaki) Support arrays of string in inventory params
+	}
+
+	return false
 }
 
 // ParseMasterPlan takes a raw yaml file and parses it into a set of MasterPlans
