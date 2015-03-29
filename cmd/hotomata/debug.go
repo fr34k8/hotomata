@@ -20,8 +20,10 @@ func setupDebug(c *cli.Context) *hotomata.Run {
 
 	// Discover plans
 	run := hotomata.NewRun()
-	plansFolder := path.Join(cwd, "plans")
-	if err = run.DiscoverPlans(plansFolder); err != nil {
+	if err = run.DiscoverPlans("/etc/hotomata/plans"); err != nil {
+		writeError("Error: Unable to load core plans", err)
+	}
+	if err = run.DiscoverPlans(path.Join(cwd, "plans")); err != nil {
 		writeError("Error: Unable to load plans", err)
 	}
 
@@ -49,7 +51,7 @@ func debugPlan(c *cli.Context) {
 func debugPlans(c *cli.Context) {
 	run := setupDebug(c)
 
-	writef(hotomata.ColorNone, "All plans\n")
+	fmt.Println("All plans")
 
 	for _, p := range run.Plans() {
 		writePlan("", run, p, false)
@@ -62,23 +64,19 @@ func writePlan(in string, run *hotomata.Run, p *hotomata.Plan, detailed bool) {
 	in = in + "  "
 
 	if detailed {
-		fmt.Println()
-		writef(hotomata.ColorMagenta, "%sName: %s", in, p.Name)
+		var vars string
+		for k, v := range p.Vars {
+			vars = color(hotomata.ColorCyan, fmt.Sprintf("%s %s=%v", vars, k, v))
+		}
+		writef(hotomata.ColorMagenta, "%s%s%s", in, p.Name, vars)
 	} else {
 		writef(hotomata.ColorMagenta, "%s%s", in, p.Name)
 	}
 
-	if detailed {
-		writef(hotomata.ColorNone, "%sVars:", in)
-		for k, v := range p.Vars {
-			writef(hotomata.ColorGreen, "%s  %s: %v", in, k, v)
-		}
-	}
-
-	if detailed {
-		writef(hotomata.ColorNone, "%sPlans:", in)
-	}
 	for _, planCall := range p.PlanCalls {
+		if detailed {
+			fmt.Printf("%s  %s\n", in, planCall.Name)
+		}
 		if planCall.Run != "" {
 			var extra string
 			if planCall.Local {
@@ -91,14 +89,14 @@ func writePlan(in string, run *hotomata.Run, p *hotomata.Plan, detailed bool) {
 				extra = extra + color(hotomata.ColorCyan, " ignore_errors=true")
 			}
 
-			writef(hotomata.ColorGreen, "%s  $run: %s%s", in, strings.Split(planCall.Run, "\n")[0], extra)
+			writef(hotomata.ColorGreen, "%s  %s%s", in, strings.Split(planCall.Run, "\n")[0], extra)
 		} else {
 			plan, found := run.Plan(planCall.Plan)
 			if found {
 				writePlan(in, run, plan, detailed)
 			} else {
 				if detailed {
-					writef(hotomata.ColorRed, "%s  Name: %s (missing)", in, planCall.Plan)
+					writef(hotomata.ColorRed, "%s  %s (plan missing)", in, planCall.Plan)
 				} else {
 					writef(hotomata.ColorRed, "%s  %s (missing)", in, planCall.Plan)
 				}

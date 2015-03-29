@@ -1,43 +1,34 @@
 [
   {
-    "group_name": "aws",
-    "ssh_port": 2222,
-    "ssh_key": "/home/bob/.ssh/aws_infra",
-    "provider": "aws",
+    "group_name": "do",
+    "ssh_port": 22,
+    "ssh_key": "/Users/kiasaki/.ssh/id_rsa",
+    "ssh_username": "ubuntu",
+    "provider": "do",
     "machines": [
       {
-        "group_name": "db",
-        "tags": ["8gb", "db", "ssd", "mem"],
-        "role": "db",
-        "ssh_username": "ubuntu",
+        "group_name": "lb",
+        "role": "lb",
+        "app": "app-x",
         "machines": [
           {
-            "name": "web1",
-            "ssh_hostname": "web1.us-east.aws.example.com"
-          },
-          {
-            "name": "web2",
-            "ssh_hostname": "web2.us-east.aws.example.com"
-          },
-          {
-            "name": "web3",
-            "ssh_hostname": "web3.us-east.aws.example.com"
+            "name": "lb1.app-x",
+            "ssh_hostname": "lb1.app-x.kiasaki.com"
           }
         ]
       },
       {
-        "group_name": "lb",
-        "tags": ["2gb", "lb", "spinning"],
-        "role": "lb",
-        "ssh_username": "core",
+        "group_name": "web",
+        "role": "web",
+        "app": "app-x",
         "machines": [
           {
-            "name": "lb1",
-            "ssh_hostname": "lb1.us-east.aws.example.com"
+            "name": "web1.app-x",
+            "ssh_hostname": "web1.app-x.kiasaki.com"
           },
           {
-            "name": "lb2",
-            "ssh_hostname": "lb2.us-east.aws.example.com"
+            "name": "web2.app-x",
+            "ssh_hostname": "web2.app-x.kiasaki.com"
           }
         ]
       }

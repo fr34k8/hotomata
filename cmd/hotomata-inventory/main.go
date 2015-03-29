@@ -27,69 +27,73 @@ func main() {
 			Name:    "check",
 			Aliases: []string{"c"},
 			Usage:   "Verifies a given inventory file is valid",
-			Action: func(c *cli.Context) {
-				contents, err := ioutil.ReadFile(c.Args().First())
-				if err != nil {
-					panic(err)
-				}
-
-				result, err := hotomata.ValidateInventory(string(contents))
-				if err != nil {
-					panic(err.Error())
-				}
-
-				if result.Valid() {
-					fmt.Printf(hotomata.Colorize("The document is valid\n", hotomata.ColorGreen))
-				} else {
-					fmt.Printf(hotomata.Colorize("The document is not valid. see errors :\n", hotomata.ColorRed))
-					for _, desc := range result.Errors() {
-						fmt.Printf("- %s\n", desc)
-					}
-				}
-			},
+			Action:  checkCmd,
 		},
 		{
 			Name:    "print",
 			Aliases: []string{"p"},
 			Usage:   "Prints the contents of an inventory file",
-			Action: func(c *cli.Context) {
-				contents, err := ioutil.ReadFile(c.Args().First())
-				if err != nil {
-					fmt.Printf(hotomata.Colorize("Can't read file: %s", hotomata.ColorRed), c.Args().First())
-				}
-
-				machines, err := hotomata.ParseInventory(contents)
-				if err != nil {
-					fmt.Printf(hotomata.Colorize("%s\n", hotomata.ColorRed), err.Error())
-				} else {
-					for _, machine := range machines {
-						fmt.Printf(hotomata.Colorize("Machine: %s\n", hotomata.ColorMagenta), machine.Name)
-						fmt.Printf(hotomata.Colorize("Groups: %v\n", hotomata.ColorBlue), machine.Groups.Names())
-						fmt.Print("Properties:\n")
-
-						// Here's the tricky part, lets sort them alphabeticlay
-						var pairs = PropertyPairs{}
-						for k, v := range machine.Properties() {
-							pairs = append(pairs, PropertyPair{k, v})
-						}
-
-						sort.Sort(&pairs)
-						for _, pair := range pairs {
-							valString, err := pair.Value.MarshalJSON()
-							if err != nil {
-								panic(err) // should never happen it's unmarshaled json
-							}
-							fmt.Printf("\t%s: %s\n", pair.Property, string(valString))
-						}
-
-						fmt.Println("")
-					}
-				}
-			},
+			Action:  printCmd,
 		},
 	}
 
 	app.Run(os.Args)
+}
+
+func checkCmd(c *cli.Context) {
+	contents, err := ioutil.ReadFile(c.Args().First())
+	if err != nil {
+		panic(err)
+	}
+
+	result, err := hotomata.ValidateInventory(string(contents))
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if result.Valid() {
+		fmt.Printf(hotomata.Colorize("The document is valid\n", hotomata.ColorGreen))
+	} else {
+		fmt.Printf(hotomata.Colorize("The document is not valid. see errors :\n", hotomata.ColorRed))
+		for _, desc := range result.Errors() {
+			fmt.Printf("- %s\n", desc)
+		}
+	}
+}
+
+func printCmd(c *cli.Context) {
+	contents, err := ioutil.ReadFile(c.Args().First())
+	if err != nil {
+		fmt.Printf(hotomata.Colorize("Can't read file: %s", hotomata.ColorRed), c.Args().First())
+	}
+
+	machines, err := hotomata.ParseInventory(contents)
+	if err != nil {
+		fmt.Printf(hotomata.Colorize("%s\n", hotomata.ColorRed), err.Error())
+	} else {
+		for _, machine := range machines {
+			fmt.Printf(hotomata.Colorize("Machine: %s\n", hotomata.ColorMagenta), machine.Name)
+			fmt.Printf(hotomata.Colorize("Groups: %v\n", hotomata.ColorBlue), machine.Groups.Names())
+			fmt.Print("Variables:\n")
+
+			// Here's the tricky part, lets sort them alphabeticlay
+			var pairs = PropertyPairs{}
+			for k, v := range machine.Properties() {
+				pairs = append(pairs, PropertyPair{k, v})
+			}
+
+			sort.Sort(&pairs)
+			for _, pair := range pairs {
+				valString, err := pair.Value.MarshalJSON()
+				if err != nil {
+					panic(err) // should never happen it's unmarshaled json
+				}
+				fmt.Printf("    %s: %s\n", pair.Property, string(valString))
+			}
+
+			fmt.Println("")
+		}
+	}
 }
 
 type PropertyPair struct {
