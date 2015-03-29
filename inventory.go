@@ -32,6 +32,21 @@ func (m InventoryMachine) Vars() map[string]json.RawMessage {
 	return props
 }
 
+func (m InventoryMachine) PlanVars() PlanVars {
+	var planVars = map[string]interface{}{}
+
+	for k, rawValue := range m.Vars() {
+		var value interface{}
+		err := json.Unmarshal([]byte(rawValue), &value)
+		if err != nil {
+			panic(err)
+		}
+		planVars[k] = value
+	}
+
+	return planVars
+}
+
 type InventoryGroup struct {
 	GroupName  string
 	properties map[string]json.RawMessage

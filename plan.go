@@ -113,6 +113,14 @@ func ParsePlan(planName string, yamlSource []byte) (*Plan, error) {
 			return plan, newError("Error parsing plan: %s: $run or $plan is required (%s)", planName, planCall.Name)
 		}
 
+		delete(rawPlanCall, "$name")
+		delete(rawPlanCall, "$run")
+		delete(rawPlanCall, "$plan")
+		delete(rawPlanCall, "$local")
+		delete(rawPlanCall, "$sudo")
+		delete(rawPlanCall, "$ignore_errors")
+		planCall.Vars = PlanVars(rawPlanCall)
+
 		plan.PlanCalls = append(plan.PlanCalls, planCall)
 	}
 

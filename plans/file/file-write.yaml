@@ -10,6 +10,6 @@ vars:
 plans:
   - $name: Write contents to file
     $run: |
-      cat << 'EOF' > {% path %}
-      {% contents %}
+      cat << 'EOF' > {{ path }}
+      {{ contents }}
       EOF

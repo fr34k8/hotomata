@@ -8,5 +8,5 @@ vars:
 
 plans:
   - $name: Restart the service
-    $run: service {% service %} restart
+    $run: service {{ service }} restart
     $sudo: true

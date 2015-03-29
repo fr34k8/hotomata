@@ -13,6 +13,7 @@ const planFileExt = ".yaml"
 // that represent it's context. Those variables come from the inventory file,
 // the var files, the masterplans, all the plans util a $run was found
 type Task struct {
+	TopLevelName string
 	Name         string
 	Run          string
 	SpecialFlags PlanSpecialFlags
@@ -116,7 +117,7 @@ func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *Maste
 	var topPlanCalls []*PlanCall
 	for _, planName := range masterplan.Plans {
 		topPlanCalls = append(topPlanCalls, &PlanCall{
-			Name: "Execute plan " + planName,
+			Name: planName,
 			Plan: planName,
 			Vars: PlanVars{},
 		})
@@ -128,15 +129,27 @@ func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *Maste
 		PlanSpecialFlags{},
 		[]PlanVars{masterplan.Vars},
 		topPlanCalls,
+		"",
 	)
 	if err != nil {
-		logger.Write(ColorRed, "ABORT: "+err.Error()+"\n")
+		logger.Write(ColorRed, "abort: "+err.Error()+"\n")
 		return err
 	}
+
 	for _, task := range tasks {
-		logger.WriteLine(ColorCyan, "TASK: [ %s ]", task.Name)
+		logger.WriteLine(ColorCyan, "TASK: [ %s ] %s ", task.TopLevelName, task.Name)
 		for _, m := range machines {
-			logger.WriteLine(ColorCyan, ">>>>>: [ %s ] %s", string(m.Vars()["ssh_hostname"]), task.Run)
+			_, err := ExecuteTemplate(task.Run, append([]PlanVars{m.PlanVars()}, task.VarsChain...))
+			if err != nil {
+				logger.WriteLine(ColorRed, "abort: [ %s ] %s", m.Name, "Failed to compile template")
+				logger.Write(ColorRed, err.Error()+"\n")
+				logger.Writenc(task.Run + "\n")
+			} else {
+				logTaskResponse(logger, task, m, &TaskResponse{
+					Action: TaskActionContinue,
+					Status: TaskStatusSuccess,
+				})
+			}
 		}
 	}
 
@@ -150,13 +163,20 @@ func (r *Run) dereferenceTasksFromPlanCalls(
 	specialFlags PlanSpecialFlags,
 	varsChain []PlanVars,
 	planCalls []*PlanCall,
+	topLevelName string,
 ) ([]*Task, error) {
 	var err error
 
 	for _, pc := range planCalls {
+		tln := topLevelName
+		if tln == "" {
+			tln = pc.Name
+		}
+
 		if pc.Run != "" {
 			// Gather vars and create task
 			tasks = append(tasks, &Task{
+				TopLevelName: tln,
 				Name:         pc.Name,
 				Run:          pc.Run,
 				SpecialFlags: specialFlags.Join(pc),
@@ -168,8 +188,9 @@ func (r *Run) dereferenceTasksFromPlanCalls(
 				tasks, err = r.dereferenceTasksFromPlanCalls(
 					tasks,
 					specialFlags.Join(pc),
-					append(varsChain, plan.Vars, pc.Vars),
+					append(varsChain, pc.Vars, plan.Vars),
 					plan.PlanCalls,
+					tln,
 				)
 				if err != nil {
 					return tasks, err
@@ -188,6 +209,11 @@ func logRunStart(logger *Logger, machines []InventoryMachine) {
 	for _, m := range machines {
 		runMachineNames = runMachineNames + m.Name + " "
 	}
+	logger.Writenc("\n")
 	logger.WriteLine(ColorMagenta, "RUN: [ %s]", runMachineNames)
 	logger.Writenc("\n")
+}
+
+func logTaskResponse(logger *Logger, task *Task, m InventoryMachine, r *TaskResponse) {
+	logger.WriteLine(r.Color(), "%s(%s) [ %s ] local=%t sudo=%t ignore_errors=%t", r.Action, r.Status, m.Name, task.SpecialFlags.Local, task.SpecialFlags.Sudo, task.SpecialFlags.IgnoreErrors)
 }

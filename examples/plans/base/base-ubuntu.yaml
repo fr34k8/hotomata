@@ -6,7 +6,8 @@
 plans:
   - $name: Set hostname
     $plan: hostname
-    hostname: "{% name %}"
+    hostname: "{{ name }}"
+    derp: derp
 
   - $name: Set locale to UTF-8
     $run: locale-gen en_CA.UTF-8

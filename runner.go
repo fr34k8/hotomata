@@ -26,6 +26,21 @@ type TaskResponse struct {
 	Status TaskStatus
 }
 
+func (r TaskResponse) Color() Color {
+	switch r.Status {
+	case TaskStatusSuccess:
+		return ColorGreen
+	case TaskStatusError:
+		return ColorRed
+	case TaskStatusWarning:
+		return ColorYellow
+	case TaskStatusSkip:
+		return ColorBlue
+
+	}
+	return ColorNone
+}
+
 type Runner interface {
 	Run(string) *TaskResponse
 }

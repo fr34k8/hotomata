@@ -9,6 +9,6 @@ vars:
 
 plans:
   - $name: Get file from remote using scp
-    $run: "scp {{.filename}} {{.ssh_username}}@{{.ssh_hostname}}"
+    $run: "scp {{ ssh_username }}@{{ ssh_hostname }}:{{ path }} {{ dest }}"
     $local: true
 

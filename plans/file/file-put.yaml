@@ -9,5 +9,5 @@ vars:
 
 plans:
   - $name: Put file on remote using scp
-    $run: "scp {{.filename}} {{.ssh_username}}@{{.ssh_hostname}}"
+    $run: "scp {{ path }} {{ ssh_username }}@{{ ssh_hostname }}:{{ dest }}"
     $local: true
