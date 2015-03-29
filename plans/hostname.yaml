@@ -12,7 +12,7 @@ plans:
     that: "{% hostname %}"
 
   - $name: Change hostname
-    $plan: file_write
+    $plan: file-write
     $sudo: true
     path: /etc/hostname
     contents: "{% hostname %}"
@@ -22,6 +22,6 @@ plans:
     $sudo: true
 
   - $name: Restart hostname service
-    $plan: service_restart
+    $plan: service-restart
     service: hostname
 

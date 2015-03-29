@@ -1,6 +1,6 @@
-# file_get
+# file-put
 #
-# Get a file from remote host to local host
+# Puts a local file to the remote host
 ---
 
 vars:
@@ -8,7 +8,6 @@ vars:
   dest:
 
 plans:
-  - $name: Get file from remote using scp
+  - $name: Put file on remote using scp
     $run: "scp {{.filename}} {{.ssh_username}}@{{.ssh_hostname}}"
     $local: true
-
