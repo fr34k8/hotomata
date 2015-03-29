@@ -26,6 +26,24 @@ func main() {
 			Usage:  "inventory file location",
 			EnvVar: "HOTOMATA_INVENTORY_FILE",
 		},
+		cli.StringFlag{
+			Name:   "masterplan, m",
+			Value:  "masterplan.yaml",
+			Usage:  "masterplan file location",
+			EnvVar: "HOTOMATA_MASTERPLAN_FILE",
+		},
+		cli.StringFlag{
+			Name:   "plans-folder, f",
+			Value:  "plans",
+			Usage:  "plans folder location",
+			EnvVar: "HOTOMATA_PLANS_FOLDER",
+		},
+		cli.StringFlag{
+			Name:   "core-plans-folder",
+			Value:  "/etc/hotomata/plans",
+			Usage:  "core plans folder location",
+			EnvVar: "HOTOMATA_CORE_PLANS_FOLDER",
+		},
 	}
 	app.Commands = []cli.Command{
 		{

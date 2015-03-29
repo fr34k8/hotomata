@@ -2,9 +2,10 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kiasaki/hotomata"
 )
 
@@ -12,13 +13,7 @@ func run(c *cli.Context) {
 	var contents []byte
 	var err error
 
-	// Parse masterplan args
-	var masterPlanFile = c.Args().First()
-	if masterPlanFile == "" {
-		writeError("Error: A masterplan is required. e.g. `hotomata masterplan.yml`", nil)
-	}
-
-	// Parse inventory args
+	// Parse inventory arg
 	var inventoryFile = c.GlobalString("inventory")
 	if inventoryFile == "" {
 		writeError("Error: An inventory file is required. e.g. `hotomata --inventory inventory.json`", nil)
@@ -29,9 +24,15 @@ func run(c *cli.Context) {
 	if err != nil {
 		writeError("Error: Unable to read inventory file at "+inventoryFile, err)
 	}
-	_, err = hotomata.ParseInventory(contents)
+	inventory, err = hotomata.ParseInventory(contents)
 	if err != nil {
 		writeError("Error: Unable to parse inventory file, verify your JSON syntax", err)
+	}
+
+	// Parse masterplan arg
+	var masterPlanFile = c.GlobalString("masterplan")
+	if c.Args().First() != "" {
+		masterPlanFile = c.Args().First()
 	}
 
 	// Parse actual masterplan
@@ -43,5 +44,19 @@ func run(c *cli.Context) {
 	if err != nil {
 		writeError("Error: Unable to parse masterplan file, verify your YAML syntax", err)
 	}
-	spew.Dump(masterplans)
+
+	// Create a run and parse plans
+	run := hotomata.NewRun()
+	run.LoadInventory(inventory)
+	err = run.DiscoverPlans(c.GlobalString("core-plans-folder"))
+	if err != nil {
+		writeError("Error: could not load core plans folder at "+c.GlobalString("core-plans-folder"), err)
+	}
+	err = run.DiscoverPlans(c.GlobalString("plans-folder"))
+	if err != nil {
+		writeError("Error: could not load plans folder at "+c.GlobalString("plans-folder"), err)
+	}
+
+	logger := log.New(os.Stderr, "", log.Ltime)
+	run.RunMasterPlans(logger, masterplans)
 }
