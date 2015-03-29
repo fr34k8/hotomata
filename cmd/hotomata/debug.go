@@ -6,7 +6,6 @@ import (
 	"path"
 
 	"github.com/codegangsta/cli"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kiasaki/hotomata"
 )
 
@@ -43,43 +42,54 @@ func debugPlan(c *cli.Context) {
 		writeError("Error: Unable to find plan '"+planName+"'", nil)
 	}
 
-	spew.Dump(plan)
+	writePlan("", run, plan, true)
 }
 
 func debugPlans(c *cli.Context) {
 	run := setupDebug(c)
 
-	writef(hotomata.ColorNone, "Plans")
+	writef(hotomata.ColorNone, "All plans\n")
 
 	for _, p := range run.Plans() {
-		writePlan("", run, p)
+		writePlan("", run, p, false)
 		fmt.Println("")
 	}
-
-	spew.Dump(run.Plans())
 }
 
-func writePlan(in string, run *hotomata.Run, p *hotomata.Plan) {
+func writePlan(in string, run *hotomata.Run, p *hotomata.Plan, detailed bool) {
 	// Bump indentation each level
 	in = in + "  "
 
-	writef(hotomata.ColorMagenta, "%sName: %s", in, p.Name)
+	if detailed {
+		writef(hotomata.ColorMagenta, "%sName: %s", in, p.Name)
+	} else {
+		writef(hotomata.ColorMagenta, "%s%s", in, p.Name)
 
-	writef(hotomata.ColorCyan, "%sVars:", in)
-	for k, v := range p.Vars {
-		writef(hotomata.ColorCyan, "%s  %s: %v", in, k, v)
 	}
 
-	writef(hotomata.ColorCyan, "%sPlans:", in)
+	if detailed {
+		writef(hotomata.ColorCyan, "%sVars:", in)
+		for k, v := range p.Vars {
+			writef(hotomata.ColorGreen, "%s  %s: %v", in, k, v)
+		}
+	}
+
+	if detailed {
+		writef(hotomata.ColorCyan, "%sPlans:", in)
+	}
 	for _, planCall := range p.PlanCalls {
 		if planCall.Run != "" {
 			writef(hotomata.ColorGreen, "%s  $run: %s", in, planCall.Run)
 		} else {
 			plan, found := run.Plan(planCall.Plan)
 			if found {
-				writePlan(in, run, plan)
+				writePlan(in, run, plan, detailed)
 			} else {
-				writef(hotomata.ColorRed, "%s  missing plan: %s", in, planCall.Plan)
+				if detailed {
+					writef(hotomata.ColorRed, "%s  Name: %s (missing)", in, planCall.Plan)
+				} else {
+					writef(hotomata.ColorRed, "%s  %s (missing)", in, planCall.Plan)
+				}
 			}
 		}
 	}

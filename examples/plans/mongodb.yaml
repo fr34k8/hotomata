@@ -1,0 +1,7 @@
+---
+
+plans:
+  - $name: Push config
+    $plan: file_put
+  - $name: Add user to mongodb
+    $plan: mongodb_run
