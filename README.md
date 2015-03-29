@@ -1,6 +1,6 @@
 # Hotomata
 
-_Light weight configuration management tool written in Go (yaml+ssh)_
+_Lightweight configuration management tool written in Go (yaml+ssh)_
 
 Hotomata is hopefully easy to use and candidate for serious projects but in all
 cases a great learning experience and fun project.

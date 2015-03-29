@@ -34,6 +34,17 @@ func main() {
 			Usage:   "Runs a given masterplan against an inventory of machines",
 			Action:  run,
 		},
+		{
+			Name:  "debug",
+			Usage: "Few sub commands for debuging your plans",
+			Subcommands: []cli.Command{
+				{
+					Name:   "plan",
+					Usage:  "Visualise a specific plan",
+					Action: debugPlan,
+				},
+			},
+		},
 	}
 
 	app.Run(os.Args)
