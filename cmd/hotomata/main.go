@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/merd/hotomata"
+	"github.com/kiasaki/hotomata"
 )
 
 func main() {
@@ -43,11 +43,20 @@ func main() {
 					Usage:  "Visualise a specific plan",
 					Action: debugPlan,
 				},
+				{
+					Name:   "plans",
+					Usage:  "Visualise all plans discovered",
+					Action: debugPlans,
+				},
 			},
 		},
 	}
 
 	app.Run(os.Args)
+}
+
+func writef(color hotomata.Color, message string, params ...interface{}) {
+	fmt.Printf(hotomata.Colorize(message, color)+"\n", params...)
 }
 
 func writeError(message string, err error) {

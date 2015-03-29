@@ -5,7 +5,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/merd/hotomata"
+	"github.com/kiasaki/hotomata"
 )
 
 func run(c *cli.Context) {

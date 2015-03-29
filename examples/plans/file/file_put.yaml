@@ -1,0 +1,13 @@
+# file_put
+#
+# Puts a local file to the remote host
+---
+
+vars:
+  path:
+  dest:
+
+plans:
+  - $name: Put file on remote using scp
+    $run: "scp {{.filename}} {{.ssh_username}}@{{.ssh_hostname}}"
+    $local: true

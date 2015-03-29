@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/codegangsta/cli"
-	"github.com/merd/hotomata"
+	"github.com/kiasaki/hotomata"
 )
 
 func main() {

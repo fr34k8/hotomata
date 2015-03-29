@@ -1,23 +1,26 @@
 package hotomata
 
 import (
+	"errors"
+
 	"gopkg.in/yaml.v2"
 )
 
 type PlanVars map[string]interface{}
 
 type PlanCall struct {
-	Name  string
-	Run   string
-	Plan  string
-	Local bool
-	Vars  PlanVars
+	Name         string
+	Run          string
+	Plan         string
+	Local        bool
+	IgnoreErrors bool
+	Vars         PlanVars
 }
 
 type Plan struct {
-	Name        string
-	DefaultVars PlanVars
-	PlanCalls   []PlanCall
+	Name      string
+	Vars      PlanVars
+	PlanCalls []*PlanCall
 }
 
 func ParsePlan(planName string, yamlSource []byte) (*Plan, error) {
@@ -58,20 +61,26 @@ func ParsePlan(planName string, yamlSource []byte) (*Plan, error) {
 			}
 		}
 
-		// Parse PlanCall $run
+		// Parse PlanCall $plan
 		if rawPlanCallPlan, ok := rawPlanCall["$plan"]; ok {
 			if planCallPlan, ok := rawPlanCallPlan.(string); ok {
-				planCall.Plan = callPlanName
+				planCall.Plan = planCallPlan
 			} else {
 				return plan, newError("Error parsing plan: %s: $plan is not a string (%s)", planName, planCall.Name)
 			}
 		}
 
-		planCall.Local = false
-		if local, ok := rawPlanCall["$local"].(bool); ok {
-			planCall.Local = local
-		} else {
-			return plan, newError("Error parsing plan: %s: $local is not a bool (%s)", planName, planCall.Name)
+		var boolValue bool
+		boolValue, err = getRawPlanCallBool(rawPlanCall, "$local")
+		planCall.Local = boolValue
+		if err != nil {
+			return plan, newError("Error parsing plan: %s: $local is not 'true' or 'false' (%s)", planName, planCall.Name)
+		}
+
+		boolValue, err = getRawPlanCallBool(rawPlanCall, "$ignore_errors")
+		planCall.IgnoreErrors = boolValue
+		if err != nil {
+			return plan, newError("Error parsing plan: %s: $ignore_errors is not 'true' or 'false' (%s)", planName, planCall.Name)
 		}
 
 		// Verify we have an action to do
@@ -83,4 +92,15 @@ func ParsePlan(planName string, yamlSource []byte) (*Plan, error) {
 	}
 
 	return plan, nil
+}
+
+func getRawPlanCallBool(rawPlanCall map[string]interface{}, key string) (bool, error) {
+	if raw, ok := rawPlanCall[key]; ok {
+		if value, ok := raw.(bool); ok {
+			return value, nil
+		} else {
+			return false, errors.New("Not a bool")
+		}
+	}
+	return false, nil
 }
