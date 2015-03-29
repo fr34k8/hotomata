@@ -55,8 +55,8 @@ func main() {
 	app.Run(os.Args)
 }
 
-func writef(color hotomata.Color, message string, params ...interface{}) {
-	fmt.Printf(hotomata.Colorize(message, color)+"\n", params...)
+func writef(c hotomata.Color, message string, params ...interface{}) {
+	fmt.Printf(color(c, message)+"\n", params...)
 }
 
 func writeError(message string, err error) {
@@ -64,6 +64,10 @@ func writeError(message string, err error) {
 	if err != nil {
 		completeMessage = fmt.Sprintf("%s (%s)", completeMessage, err.Error())
 	}
-	fmt.Print(hotomata.Colorize(completeMessage+"\n", hotomata.ColorRed))
+	fmt.Print(color(hotomata.ColorRed, completeMessage+"\n"))
 	os.Exit(1)
+}
+
+func color(color hotomata.Color, message string) string {
+	return hotomata.Colorize(message, color)
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/kiasaki/hotomata"
@@ -61,25 +62,36 @@ func writePlan(in string, run *hotomata.Run, p *hotomata.Plan, detailed bool) {
 	in = in + "  "
 
 	if detailed {
+		fmt.Println()
 		writef(hotomata.ColorMagenta, "%sName: %s", in, p.Name)
 	} else {
 		writef(hotomata.ColorMagenta, "%s%s", in, p.Name)
-
 	}
 
 	if detailed {
-		writef(hotomata.ColorCyan, "%sVars:", in)
+		writef(hotomata.ColorNone, "%sVars:", in)
 		for k, v := range p.Vars {
 			writef(hotomata.ColorGreen, "%s  %s: %v", in, k, v)
 		}
 	}
 
 	if detailed {
-		writef(hotomata.ColorCyan, "%sPlans:", in)
+		writef(hotomata.ColorNone, "%sPlans:", in)
 	}
 	for _, planCall := range p.PlanCalls {
 		if planCall.Run != "" {
-			writef(hotomata.ColorGreen, "%s  $run: %s", in, planCall.Run)
+			var extra string
+			if planCall.Local {
+				extra = extra + color(hotomata.ColorCyan, " local=true")
+			}
+			if planCall.Sudo {
+				extra = extra + color(hotomata.ColorCyan, " sudo=true")
+			}
+			if planCall.IgnoreErrors {
+				extra = extra + color(hotomata.ColorCyan, " ignore_errors=true")
+			}
+
+			writef(hotomata.ColorGreen, "%s  $run: %s%s", in, strings.Split(planCall.Run, "\n")[0], extra)
 		} else {
 			plan, found := run.Plan(planCall.Plan)
 			if found {

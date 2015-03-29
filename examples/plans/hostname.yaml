@@ -1,0 +1,19 @@
+# hostname
+#
+# Sets the hostname
+---
+
+vars:
+  hostname:
+
+plans:
+  - $name: Make sure we have a hostname
+    $plan: assert
+    that: "{% hostname %}"
+
+  - $name: Change hostname
+    $plan: file_write
+    $sudo: true
+    path: /etc/hostname
+    contents: "{% hostname %}"
+

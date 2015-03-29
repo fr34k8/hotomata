@@ -2,6 +2,7 @@ package hotomata
 
 import (
 	"errors"
+	"fmt"
 
 	"gopkg.in/yaml.v2"
 )
@@ -13,6 +14,7 @@ type PlanCall struct {
 	Run          string
 	Plan         string
 	Local        bool
+	Sudo         bool
 	IgnoreErrors bool
 	Vars         PlanVars
 }
@@ -33,7 +35,7 @@ func ParsePlan(planName string, yamlSource []byte) (*Plan, error) {
 	}
 	err := yaml.Unmarshal(yamlSource, &rawPlan)
 	if err != nil {
-		return plan, err
+		return plan, errors.New(fmt.Sprintf("Error parsing yaml for plan: %s (%s)", planName, err.Error()))
 	}
 
 	// Fill structs that are nicer to work with
@@ -76,7 +78,11 @@ func ParsePlan(planName string, yamlSource []byte) (*Plan, error) {
 		if err != nil {
 			return plan, newError("Error parsing plan: %s: $local is not 'true' or 'false' (%s)", planName, planCall.Name)
 		}
-
+		boolValue, err = getRawPlanCallBool(rawPlanCall, "$sudo")
+		planCall.Sudo = boolValue
+		if err != nil {
+			return plan, newError("Error parsing plan: %s: $sudo is not 'true' or 'false' (%s)", planName, planCall.Name)
+		}
 		boolValue, err = getRawPlanCallBool(rawPlanCall, "$ignore_errors")
 		planCall.IgnoreErrors = boolValue
 		if err != nil {
