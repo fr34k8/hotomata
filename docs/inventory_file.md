@@ -3,7 +3,7 @@
 The inventory file is written in **JSON** format and contains all your machines.
 
 In it's simplest form an _inventory_ file is an array of object with a `name`
-property, that's it. But, if you define additionnal keys on those objects you
+property, that's it. But, if you define additional keys on those objects you
 will be able to configure how `hotomata` communicates with your machine over SSH
 and more (set machine specific vars that can later be used in templates).
 
@@ -36,14 +36,14 @@ You can put any keys in the machine object but few of them have a special signif
 | ssh_hostname |         | Hostname to reach machine, dns or ip |
 | ssh_username | root    | Username to login as |
 | ssh_port     | 22      | Port to connect to |
-| ssh_password |         | (Optionnal) Password for authentication |
+| ssh_password |         | (Optional) Password for authentication |
 | ssh_key      | ~/.ssh/id_rsa | path on local computer to ssh key to use |
 | other fields |         | All other fields will be passed in to templates as global vars |
 
 ## Groups
 
-Now, everybody ends up with mutiple web instances, 2 load balances, 3 db replicas
-and copy and pasting ssh config pains the eyes, so, groups exist!
+Now, everybody ends up with multiple web instances, 2 load balances, 3 db replicas
+and copy and pasting ssh configuration pains the eyes, so, groups exist!
 
 Groups are a JSON objects very similar to machines, but, they support two special
 keys:

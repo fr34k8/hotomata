@@ -2,9 +2,10 @@
 
 - machines:
     name: "lb*"
-    groups_include: ["lb"]
+    group: "lb"
+    tags: "lb,fde"
   vars:
-    nginx_version: "1.4.2"
+    nginx_version: 1.4.2
   plans:
     - common
     - merd-agent
@@ -12,7 +13,7 @@
 
 - machines:
     name: "web*"
-    groups_include: ["web"]
+    groups_include: "web"
   vars:
     node_version: "0.12.0"
   plans:
