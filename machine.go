@@ -1,6 +1,7 @@
 package hotomata
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,8 +17,36 @@ type Machine struct {
 	SSHConfig *ssh.ClientConfig
 }
 
+func MachinesFromInventoryMachines(inventoryMachines []InventoryMachine) []*Machine {
+	var rawMachines = []map[string]string{}
+
+	// convert machines to map[string]string
+	for _, inventoryMachine := range inventoryMachines {
+		var inventoryMachineVars = inventoryMachine.Vars()
+		var rawMachine = map[string]string{}
+		var err error
+
+		for _, param := range []string{"name", "ssh_hostname", "ssh_port", "ssh_key", "ssh_password"} {
+			if v, ok := inventoryMachineVars[param]; ok {
+				var value string
+				var intValue int
+				if err = json.Unmarshal(v, &value); err == nil {
+					rawMachine[param] = value
+				} else if err = json.Unmarshal(v, &intValue); err == nil {
+					rawMachine[param] = strconv.Itoa(intValue)
+				}
+			}
+		}
+
+		rawMachines = append(rawMachines, rawMachine)
+	}
+
+	return Machines(rawMachines)
+}
+
 func Machines(hosts []map[string]string) []*Machine {
 	var machines []*Machine
+
 	for _, host := range hosts {
 		hostname := host["name"]
 		if h, ok := host["ssh_hostname"]; ok {

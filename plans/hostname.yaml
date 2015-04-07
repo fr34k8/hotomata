@@ -7,9 +7,13 @@ vars:
   hostname:
 
 plans:
+  - $name: Changing hostname
+    $run: "echo '{{hostname}}'"
+    $local: true
+
   - $name: Make sure we have a hostname
     $plan: assert
-    that: "{{ hostname }}"
+    that: "'{{ hostname }}' != ''"
 
   - $name: Change hostname
     $plan: file-write

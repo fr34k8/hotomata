@@ -22,8 +22,8 @@ const (
 
 type TaskResponse struct {
 	Log    *bytes.Buffer
-	Action TaskAction
-	Status TaskStatus
+	Action TaskAction `json:"action"`
+	Status TaskStatus `json:"status"`
 }
 
 func (r TaskResponse) Color() Color {

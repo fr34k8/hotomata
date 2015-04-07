@@ -10,8 +10,8 @@ plans:
   - $name: Run assertion
     $run: |
       {% if that %}
-      echo '{"action":"continue","status":"success"}'
+      echo '{"action":"continue","status":"success"}' # assertion passed
       {% else %}
-      echo '{"action":"abort","status":"warning"}'
+      echo '{"action":"abort","status":"warning"}' # assertion failed
       {% endif %}
     $local: true

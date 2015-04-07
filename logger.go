@@ -9,13 +9,14 @@ const logFillerRune = '-'
 const loglineLength = 100
 
 type Logger struct {
+	Verbose    bool
 	writer     io.Writer
 	colored    bool
 	fillerRune rune
 }
 
-func NewLogger(writer io.Writer, colored bool) *Logger {
-	return &Logger{writer: writer, colored: colored, fillerRune: logFillerRune}
+func NewLogger(writer io.Writer, colored bool, verbose bool) *Logger {
+	return &Logger{writer: writer, colored: colored, fillerRune: logFillerRune, Verbose: verbose}
 }
 
 func (l *Logger) Write(c Color, value string) {

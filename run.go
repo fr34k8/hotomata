@@ -93,6 +93,24 @@ func (r *Run) LoadInventory(machines []InventoryMachine) {
 	r.inventory = append(r.inventory, machines...)
 }
 
+// FilterGroups removes machines not in the given group
+func (r *Run) FilterGroups(filter string) {
+	if filter == "*" {
+		return
+	}
+	var newInventory = []InventoryMachine{}
+
+	for _, m := range r.inventory {
+		for _, g := range m.Groups {
+			if g.GroupName == filter {
+				newInventory = append(newInventory, m)
+			}
+		}
+	}
+
+	r.inventory = newInventory
+}
+
 // RunMasterPlans runs a set of masterplans
 func (r *Run) RunMasterPlans(logger *Logger, masterplans []*MasterPlan) (*RunReport, error) {
 	report := &RunReport{}
@@ -110,6 +128,7 @@ func (r *Run) RunMasterPlans(logger *Logger, masterplans []*MasterPlan) (*RunRep
 // RunMasterPlan runs a specific part of the masterplan
 func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *MasterPlan) error {
 	machines := masterplan.FilterMachines(r.inventory)
+	runnerMachines := MachinesFromInventoryMachines(machines)
 
 	logRunStart(logger, machines)
 
@@ -138,17 +157,47 @@ func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *Maste
 
 	for _, task := range tasks {
 		logger.WriteLine(ColorCyan, "TASK: [ %s ] %s ", task.TopLevelName, task.Name)
-		for _, m := range machines {
-			_, err := ExecuteTemplate(task.Run, append([]PlanVars{m.PlanVars()}, task.VarsChain...))
+		for i, m := range machines {
+			cmd, err := ExecuteTemplate(task.Run, append([]PlanVars{m.PlanVars()}, task.VarsChain...))
 			if err != nil {
 				logger.WriteLine(ColorRed, "abort: [ %s ] %s", m.Name, "Failed to compile template")
 				logger.Write(ColorRed, err.Error()+"\n")
 				logger.Writenc(task.Run + "\n")
+				return err
 			} else {
-				logTaskResponse(logger, task, m, &TaskResponse{
-					Action: TaskActionContinue,
-					Status: TaskStatusSuccess,
-				})
+				// run the action!
+				runner := SSHRunner{}
+
+				// handle local and sudo special flags
+				machine := *runnerMachines[i]
+				if task.SpecialFlags.Local {
+					machine.Hostname = "127.0.0.1"
+					machine.Port = 0
+				}
+				if task.SpecialFlags.Sudo {
+					cmd = "sudo " + cmd
+				}
+
+				// run and mark as skipped if ignore_errors=true and we errored
+				response := runner.Run(machine, cmd)
+				if task.SpecialFlags.IgnoreErrors &&
+					response.Status == TaskStatusError &&
+					response.Action == TaskActionAbort {
+					response.Action = TaskActionContinue
+					response.Status = TaskStatusSkip
+				}
+
+				// log result, handle verbose flag
+				logTaskResponse(logger, task, m, response)
+				logger.Writenc(cmd + "\n")
+				if logger.Verbose {
+					logger.Writenc(response.Log.String() + "\n")
+				}
+
+				// abort if we errored
+				if response.Action == TaskActionAbort {
+					return errors.New("aborted while processing task " + task.Name + " on host " + m.Name)
+				}
 			}
 		}
 	}

@@ -50,6 +50,11 @@ func main() {
 			Usage:  "enable colored output (true or false)",
 			EnvVar: "HOTOMATA_COLOR",
 		},
+		cli.BoolFlag{
+			Name:   "verbose, V",
+			Usage:  "Log more info",
+			EnvVar: "HOTOMATA_VERBOSE",
+		},
 	}
 	app.Commands = []cli.Command{
 		{
@@ -57,6 +62,13 @@ func main() {
 			Aliases: []string{"r"},
 			Usage:   "Runs a given masterplan against an inventory of machines",
 			Action:  run,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "group, g",
+					Value: "*",
+					Usage: "Limit to certain inventory groups '*' for all",
+				},
+			},
 		},
 		{
 			Name:  "debug",

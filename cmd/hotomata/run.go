@@ -46,7 +46,6 @@ func run(c *cli.Context) {
 
 	// Create a run and parse plans
 	run := hotomata.NewRun()
-	run.LoadInventory(inventory)
 	err = run.DiscoverPlans(c.GlobalString("core-plans-folder"))
 	if err != nil {
 		writeError("Error: could not load core plans folder at "+c.GlobalString("core-plans-folder"), err)
@@ -56,6 +55,10 @@ func run(c *cli.Context) {
 		writeError("Error: could not load plans folder at "+c.GlobalString("plans-folder"), err)
 	}
 
-	logger := hotomata.NewLogger(os.Stderr, c.GlobalString("color") == "true")
+	// load inventory and limit groups
+	run.LoadInventory(inventory)
+	run.FilterGroups(c.String("group"))
+
+	logger := hotomata.NewLogger(os.Stderr, c.GlobalString("color") == "true", c.GlobalBool("verbose"))
 	run.RunMasterPlans(logger, masterplans)
 }
