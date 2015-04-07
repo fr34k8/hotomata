@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"path"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 const planFileExt = ".yaml"
@@ -144,7 +146,6 @@ func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *Maste
 
 	// Build plan tree, dereferencing all sub plans
 	tasks, err := r.dereferenceTasksFromPlanCalls(
-		[]*Task{},
 		PlanSpecialFlags{},
 		[]PlanVars{masterplan.Vars},
 		topPlanCalls,
@@ -158,6 +159,7 @@ func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *Maste
 	for _, task := range tasks {
 		logger.WriteLine(ColorCyan, "TASK: [ %s ] %s ", task.TopLevelName, task.Name)
 		for i, m := range machines {
+			spew.Dump(task)
 			cmd, err := ExecuteTemplate(task.Run, append([]PlanVars{m.PlanVars()}, task.VarsChain...))
 			if err != nil {
 				logger.WriteLine(ColorRed, "abort: [ %s ] %s", m.Name, "Failed to compile template")
@@ -208,13 +210,12 @@ func (r *Run) RunMasterPlan(logger *Logger, report *RunReport, masterplan *Maste
 // dereferenceTasksFromPlanCalls is a recursive function that extracts run commands
 // and transforms them to tasks based on the context
 func (r *Run) dereferenceTasksFromPlanCalls(
-	tasks []*Task,
 	specialFlags PlanSpecialFlags,
 	varsChain []PlanVars,
 	planCalls []*PlanCall,
 	topLevelName string,
 ) ([]*Task, error) {
-	var err error
+	var tasks = []*Task{}
 
 	for _, pc := range planCalls {
 		tln := topLevelName
@@ -231,19 +232,20 @@ func (r *Run) dereferenceTasksFromPlanCalls(
 				SpecialFlags: specialFlags.Join(pc),
 				VarsChain:    append(varsChain, pc.Vars),
 			})
+			spew.Dump(tasks[len(tasks)-1])
 		} else {
 			// Go deeper
 			if plan, ok := r.Plan(pc.Plan); ok {
-				tasks, err = r.dereferenceTasksFromPlanCalls(
-					tasks,
+				newTasks, err := r.dereferenceTasksFromPlanCalls(
 					specialFlags.Join(pc),
-					append(varsChain, pc.Vars, plan.Vars),
+					append(varsChain, plan.Vars, pc.Vars),
 					plan.PlanCalls,
 					tln,
 				)
 				if err != nil {
 					return tasks, err
 				}
+				tasks = append(tasks, newTasks...)
 			} else {
 				return tasks, errors.New("Plan " + pc.Plan + " is missing")
 			}
